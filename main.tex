@@ -1,0 +1,206 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % Paquete necesario para incluir imágenes, cambiarles el tamaño, etc.
+\usepackage{enumitem} % Para poder configurar las listas
+\usepackage{amsmath} % Matemáticas y más matemáticas
+\everymath{\displaystyle} % Esto es para que las expresiones se vean... grandes, que resulta diferente de si las queremos entre líneas.
+
+\title{Solución de la ecuación de Schrödinger en 1D}
+\author{Samuel Vasco Gonzales, Luis Adrián Avendaño Londoño}
+\date{Física Computacional I}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+
+\vspace{10.0mm}
+
+$\hspace{3.0cm}$   $\left[-\dfrac{\hbar^2}{2m}\dfrac{d^2}{dz^2} + V(z) \right]\psi(z)=\psi(z)E$
+
+\vspace{10.0mm}
+
+La ecuación de Schrödinger independiente del tiempo en una dimensión. A pesar de que las ondas  reales, dependen tanto del tiempo como de las coordenadas espaciales, y aunque el mundo es tridimensional y no unidimensional, se puede aprender mucho acerca de las matemáticas y de la física de la mecánica cuántica estudiando las soluciones de dicha ecuación. 
+
+\medskip
+
+Las técnicas para resolver la ecuación de Schrödinger son lo suficientemente parecidas, sin importar cuál sea la forma de potencial V (el que es en general una función de $x$), como para establecer una serie de pasos para obtener las soluciones. Se supone que se tiene un cierto potencial $V(x)$, y se desea obtener la función de onda $\psi(x)$ y la energía E. Lo anterior constituye un ejemplo general de un tipo de ecuación conocida como \textit{ecuación de eigenvalores}; se econtrará que es posible obtener soluciones a la ecuación sólo para ciertos valores de E, los cuales son conocidos como los \textit{eigenvalores de la energía}[2]
+
+\medskip
+
+\section{Algoritmo} 
+
+
+Deseamos solucionar la ecuación de Schrödinger para una dimensión, por medio del método de diferencias finitas encontrado en el libro \textit{A First Course in Computational Physics} , llevando el sistema a un problema de valores y vectores propios. Dicho método consiste en aproximar la segunda derivada respecto a $z$ de la función de onda por medio de:
+
+\vspace{5.0mm}
+
+$\dfrac{d^2}{dz^2}\psi=\dfrac{\psi_{i-1} - 2\psi_{i} + \psi_{i+1}}{h^2}$ $\hspace{1.0cm}$(1)
+
+\vspace{5.0mm}
+
+$-\dfrac{\hbar^2}{2m}\dfrac{d^2}{dz^2}\psi(z) + (V(z)-E)\psi(z)=0$$\hspace{1.0cm}$(2)
+
+\medskip
+
+Sea $\omega^2=V(z)-E$, $\psi(z)=f$ y reemplazando $(1)$ en $(2)$, tenemos
+
+\medskip
+
+$-\dfrac{\hbar^2}{2m}\dfrac{f{i-1} - 2f{i} + f{i+1}}{h^2}+ \omega^2f_i=0$$\hspace{1.0cm}$
+
+\medskip
+
+$\dfrac{\hbar^2}{2m}\dfrac{f_0}{h^2}-\dfrac{2\hbar^2}{2mh^2}f_1 + \dfrac{\hbar^2}{2m}f_2=\omega^2f_1$
+
+\medskip
+
+Pero $f_0=0$
+
+\medskip
+
+$\dfrac{\hbar^2}{2m}\dfrac{f_1}{h^2}-\dfrac{2\hbar^2}{2mh^2}f_2 + \dfrac{\hbar^2}{2m}f_3=\omega^2f_2$
+
+\medskip
+
+$\dfrac{\hbar^2}{2m}\dfrac{f_2}{h^2}-\dfrac{2\hbar^2}{2mh^2}f_3 + \dfrac{\hbar^2}{2m}f_4=\omega^2f_3$
+
+\medskip
+
+Y así sucesivamente podemos transformar el sistema de ecuaciones en un problema de valores y vectores propios, llegando a la siguiente ecuación matricial
+
+\medskip
+
+
+\begin{pmatrix}
+\frac{\hbar^2}{mh^2} &-\frac{\hbar^2}{2mh^2}  &...  &...  &... \\ 
+ -\frac{\hbar^2}{2mh^2}&\frac{\hbar^2}{mh^2}  & -\frac{\hbar^2}{2mh^2} & ... &... \\
+ ...&...  &...  &...  &... \\  
+ ...&...  &-\frac{\hbar^2}{2mh^2} &\frac{\hbar^2}{mh^2}  &-\frac{\hbar^2}{2mh^2} \\ 
+ ...&...  &...  &-\frac{\hbar^2}{2mh^2}  & \frac{\hbar^2}{mh^2}
+\end{pmatrix}\begin{pmatrix}
+f_1\\ 
+f_2\\ 
+...\\ 
+f_{N-1}\\ 
+f_N
+\end{pmatrix}=\omega^2\begin{pmatrix}
+f_1\\ 
+f_2\\ 
+...\\ 
+f_{N-1}\\ 
+f_N
+\end{pmatrix}
+
+\medskip
+
+Para la solución de esas $N$ ecuaciones diferenciales, hemos utilizado \textit{scipy.linalg} el método \textit{.eig}, el cual entrega un vector con los autovalores y un arreglo de vectores con las autofunciones. El arreglo de autovalores se arregla de menor a mayor y se escogen los primeros cuatro elementos de dicho arreglo, con las posiciones de esos cuatro elementos se localizan los vectores asociados en el arreglo de las autofunciones, de esta forma obtenemos entonces las cuatro primeras autofunciones y autovalores.[1]
+
+\medskip
+
+\section{Gráficas} 
+
+\textbf{POZO UNIDIMENSIONAL FINITO}
+
+\medskip
+
+\textbf{Gráfica de Autofunciones}
+
+\medskip
+
+La gráfica nos muestra las cuatro autofunciones para un pozo de potencial con paredes finitas. Vemos que la solución a la ecuación de Schrödinger para una partícula libre atrapada en dicho pozo es una serie de ondas estacionarias, no cualquier tipo de onda estacionaria, sino, las ondas estacionarias de deBroglie. Por otra parte, vemos en la gráfica queno todas las longitudes de ondas son permitidas (Cuantización de la energía)[2], sólo pueden ocurrir en ciertos valores determinados (n=1,2,3,...). 
+
+Para n=1 tenemos el estado base, los demás estados se conocen como estados excidatos.
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{Autofunciones.png}
+
+\textbf{Gráficas de los autovalores}
+
+\medskip
+
+Los autovalores obtenidos son los estados de energía de la partícula. Vemos que aunque las paredes atrapan a la partícula, no implica que dicha partícula no pueda estar por fuera del pozo, es muy poco probable de que la partícula esté fuera del pozo, pero puede estarlo, es decir, la partícula, en estos cuatro estados de energía puede estar fuera del pozo de potencial. Todo esto lo evidenciamos en las pequeñas curvas que salen de las paredes. También, de las gráficas, a medida que los estados de energía aumentan, más probabilidad tendrá la partícula de escapar del pozo, claramente! $V-E<0$, la energía cinética ($K$) de la partícula es positiva ( $K+V=E$) y la partíCULa puede escapar de esa barrera de potencial.
+
+\medskip
+
+
+\includegraphics[width=10.0cm, height=10.0cm]{Zoom autovalore.png}
+
+\medskip
+
+\textbf{Gráfica densidad de probabilidad}
+
+
+Como se hablo anteriormente, a medida que la partícula llega estados de energía más excitados, es más probable encontrar la partícula, eso lo evidenciamos en la gráfica, a medida que nos movemos en los estados excitados más probabilidad tiene de encontrar la partícula en más puntos del espacio. Para n=1, la probabilidad se centra en $a/2$, donde $a$ es el ancho del pozo. Para n=2,y no es probable encontrarla en $a/2$ sino en $a/4$ y $3a/4$, y así sucesivamente. Todo esto lo vemos en la segunda gráfica, la primera gráfica corresponde a la densidad de probabilidad y la tercera a la densidad de probabilidad dependiente del tiempo.
+
+\includegraphics[width=10.0cm, height=10.0cm]{Densidad de probabilidad.png}
+
+\includegraphics[width=10.0cm, height=10.0cm]{Probabilidad.png}
+
+\includegraphics[width=10.0cm, height=10.0cm]{Densidad de probabilidad temporal.png}
+
+\textbf{POZO UNIDIMENSIONAL INFINITO}
+
+Para el pozo infinito pasa casi que exactamente igual, a excepción de que ya la partícula no tendrá chance de salir del pozo sin importar en que estado de energía se encuentre, pues el potencial será siempre mayor a la energía y por ende la energía cinética será siempre menos a cero. No escribiremos más sobre el tema para no hacer más extenso este PDF. adjuntaremos las imágenes. 
+\medskip
+
+Nota: Las gráficas seguirán el mismo orden que el pozo unidimensional finito.
+
+\medskip
+
+\textbf{Gráfica de Autofunciones}
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{AutofuncionesI.png}
+
+\medskip
+
+\textbf{Gráfica de Autovalores}
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{Zoom AutovaloresI.png}
+
+\medskip
+
+\textbf{Gráfica densidad de probabilidad}
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{Densidad de probabilidadI.png}
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{ProbabilidadI.png}
+
+\medskip
+
+\includegraphics[width=10.0cm, height=10.0cm]{Densidad de probabilidad temporalI.png}
+
+
+\textbf{NOTA:} Las gráficas tienen un error en como se escribieron las unidades, en el eje vertical están en EV, donde debería de ser eV (electronvoltio). Nos percatamos de ese mínimo error a lo último enotnces por eso hacemos la aclaración. 
+
+
+
+
+
+
+
+
+
+
+\section{Referencias}
+
+\begin{itemize}
+    \item[1] A First Course in Computational Physic,Paul L. DeVries,pág 257-259.
+    \item [2] FÍSICA MODERNA, Kenneth S. Krane, pág 144, primera edición.
+\end{itemize}
+
+
+
+
+\end{document}
